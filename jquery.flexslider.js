@@ -105,16 +105,19 @@
         if (slider.vars.keyboard && ($(slider.containerSelector).length === 1 || slider.vars.multipleKeyboard)) {
           $(document).bind('keyup', function(event) {
             var keycode = event.keyCode;
-            if (!slider.animating && (keycode === 39 || keycode === 37)) {
-              var target = (slider.vars.rtl?
-                                ((keycode === 37) ? slider.getTarget('next') :
-                                (keycode === 39) ? slider.getTarget('prev') : false)
-                                :
-                                ((keycode === 39) ? slider.getTarget('next') :
-                                (keycode === 37) ? slider.getTarget('prev') : false)
-                                )
-                                ;
-              slider.flexAnimate(target, slider.vars.pauseOnAction);
+            // Only accept keyboard arrow control if the slideshow is focused.
+            if (slider.find(':focus').length > 0) {
+              if (!slider.animating && (keycode === 39 || keycode === 37)) {
+                var target = (slider.vars.rtl?
+                                  ((keycode === 37) ? slider.getTarget('next') :
+                                  (keycode === 39) ? slider.getTarget('prev') : false)
+                                  :
+                                  ((keycode === 39) ? slider.getTarget('next') :
+                                  (keycode === 37) ? slider.getTarget('prev') : false)
+                                  )
+                                  ;
+                slider.flexAnimate(target, slider.vars.pauseOnAction);
+              }
             }
           });
         }
@@ -237,7 +240,7 @@
               slide = slider.slides.eq(i);
               if ( undefined === slide.attr( 'data-thumb-alt' ) ) { slide.attr( 'data-thumb-alt', '' ); }
               var altText = ( '' !== slide.attr( 'data-thumb-alt' ) ) ? altText = ' alt="' + slide.attr( 'data-thumb-alt' ) + '"' : '';
-              item = (slider.vars.controlNav === "thumbnails") ? '<img src="' + slide.attr( 'data-thumb' ) + '"' + altText + '/>' : '<a href="#">' + j + '</a>';
+              item = (slider.vars.controlNav === "thumbnails") ? '<img src="' + slide.attr( 'data-thumb' ) + '"' + altText + '/>' : '<a href="#" tabindex="0">' + j + '</a>';
               if ( 'thumbnails' === slider.vars.controlNav && true === slider.vars.thumbCaptions ) {
                 var captn = slide.attr( 'data-thumbcaption' );
                 if ( '' !== captn && undefined !== captn ) { item += '<span class="' + namespace + 'caption">' + captn + '</span>'; }
@@ -319,7 +322,7 @@
       },
       directionNav: {
         setup: function() {
-          var directionNavScaffold = $('<ul class="' + namespace + 'direction-nav"><li class="' + namespace + 'nav-prev"><a class="' + namespace + 'prev" href="#">' + slider.vars.prevText + '</a></li><li class="' + namespace + 'nav-next"><a class="' + namespace + 'next" href="#">' + slider.vars.nextText + '</a></li></ul>');
+          var directionNavScaffold = $('<ul class="' + namespace + 'direction-nav"><li class="' + namespace + 'nav-prev"><a class="' + namespace + 'prev" href="#" role="button" tabindex="0">' + slider.vars.prevText + '</a></li><li class="' + namespace + 'nav-next"><a class="' + namespace + 'next" href="#" role="button" tabindex="0">' + slider.vars.nextText + '</a></li></ul>');
 
           // CUSTOM DIRECTION NAV:
           if (slider.customDirectionNav) {
@@ -339,38 +342,34 @@
             event.preventDefault();
             var target;
 
-            if (watchedEvent === "" || watchedEvent === event.type) {
+            if (event.type == "click") {
               target = ($(this).hasClass(namespace + 'next')) ? slider.getTarget('next') : slider.getTarget('prev');
               slider.flexAnimate(target, slider.vars.pauseOnAction);
             }
 
-            // setup flags to prevent event duplication
-            if (watchedEvent === "") {
-              watchedEvent = event.type;
-            }
             methods.setToClearWatchedEvent();
           });
         },
         update: function() {
           var disabledClass = namespace + 'disabled';
-          if (slider.pagingCount === 1) {
-            slider.directionNav.addClass(disabledClass).attr('tabindex', '-1');
-          } else if (!slider.vars.animationLoop) {
-            if (slider.animatingTo === 0) {
-              slider.directionNav.removeClass(disabledClass).filter('.' + namespace + "prev").addClass(disabledClass).attr('tabindex', '-1');
-            } else if (slider.animatingTo === slider.last) {
-              slider.directionNav.removeClass(disabledClass).filter('.' + namespace + "next").addClass(disabledClass).attr('tabindex', '-1');
-            } else {
-              slider.directionNav.removeClass(disabledClass).removeAttr('tabindex');
-            }
-          } else {
-            slider.directionNav.removeClass(disabledClass).removeAttr('tabindex');
-          }
+//          if (slider.pagingCount === 1) {
+//            slider.directionNav.addClass(disabledClass).attr('tabindex', '-1');
+//          } else if (!slider.vars.animationLoop) {
+//            if (slider.animatingTo === 0) {
+//              slider.directionNav.removeClass(disabledClass).filter('.' + namespace + "prev").addClass(disabledClass).attr('tabindex', '-1');
+//            } else if (slider.animatingTo === slider.last) {
+//              slider.directionNav.removeClass(disabledClass).filter('.' + namespace + "next").addClass(disabledClass).attr('tabindex', '-1');
+//            } else {
+//              slider.directionNav.removeClass(disabledClass).removeAttr('tabindex');
+//            }
+//          } else {
+//            slider.directionNav.removeClass(disabledClass).removeAttr('tabindex');
+//          }
         }
       },
       pausePlay: {
         setup: function() {
-          var pausePlayScaffold = $('<div class="' + namespace + 'pauseplay"><a href="#"></a></div>');
+          var pausePlayScaffold = $('<div class="' + namespace + 'pauseplay"><a href="#" tabindex="0" role="button"></a></div>');
 
           // CONTROLSCONTAINER:
           if (slider.controlsContainer) {
@@ -386,7 +385,7 @@
           slider.pausePlay.bind(eventType, function(event) {
             event.preventDefault();
 
-            if (watchedEvent === "" || watchedEvent === event.type) {
+            if (event.type == "click") {
               if ($(this).hasClass(namespace + 'pause')) {
                 slider.manualPause = true;
                 slider.manualPlay = false;
@@ -398,15 +397,15 @@
               }
             }
 
-            // setup flags to prevent event duplication
-            if (watchedEvent === "") {
-              watchedEvent = event.type;
-            }
             methods.setToClearWatchedEvent();
           });
         },
         update: function(state) {
-          (state === "play") ? slider.pausePlay.removeClass(namespace + 'pause').addClass(namespace + 'play').html(slider.vars.playText) : slider.pausePlay.removeClass(namespace + 'play').addClass(namespace + 'pause').html(slider.vars.pauseText);
+          if (state === namespace + "play") {
+            slider.pausePlay.removeClass(namespace + 'pause').addClass(namespace + 'play').html(slider.vars.playText);
+          } else {
+            slider.pausePlay.removeClass(namespace + 'play').addClass(namespace + 'pause').html(slider.vars.pauseText);
+          }
         }
       },
       touch: function() {
@@ -718,6 +717,11 @@
         slider.animating = true;
         slider.animatingTo = target;
 
+        // Focus target slide if current slide was focused (indicates keyboard control)
+        if (slider.slides.eq(slider.currentSlide).find(':focus').length > 0) {
+          slider.slides.eq(slider.animatingTo).find('div.field-content a').focus();
+        }
+
         // SLIDESHOW:
         if (pause) { slider.pause(); }
 
@@ -732,7 +736,17 @@
 
         // !CAROUSEL:
         // CANDIDATE: slide active class (for add/remove slide)
-        if (!carousel) { slider.slides.removeClass(namespace + 'active-slide').eq(target).addClass(namespace + 'active-slide'); }
+        if (!carousel) { 
+          slider.slides.removeClass(namespace + 'active-slide');
+
+          slider.slides.each(function () {
+            $(this).find('div.field-content a').attr('tabindex', '-1');
+          });
+
+          var liTarget = slider.slides.eq(target);
+          liTarget.addClass(namespace + 'active-slide');
+          liTarget.find('div.field-content a').attr('tabindex', '0');
+        }
 
         // INFINITE LOOP:
         // CANDIDATE: atEnd
@@ -983,7 +997,19 @@
       }
       // !CAROUSEL:
       // CANDIDATE: active slide
-      if (!carousel) { slider.slides.removeClass(namespace + "active-slide").eq(slider.currentSlide).addClass(namespace + "active-slide"); }
+      if (!carousel) { 
+        slider.slides.removeClass(namespace + "active-slide").eq(slider.currentSlide).addClass(namespace + "active-slide"); 
+
+        slider.slides.removeClass(namespace + 'active-slide');
+
+        slider.slides.each(function () {
+          $(this).find('div.field-content a').attr('tabindex', '-1');
+        });
+
+        var liTarget = slider.slides.eq(slider.currentSlide);
+        liTarget.addClass(namespace + 'active-slide');
+        liTarget.find('div.field-content a').attr('tabindex', '0');
+      }
 
       //FlexSlider: init() Callback
       slider.vars.init(slider);
