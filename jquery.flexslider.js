@@ -380,11 +380,12 @@
             slider.pausePlay = $('.' + namespace + 'pauseplay a', slider);
           }
 
-          methods.pausePlay.update((slider.vars.slideshow) ? namespace + 'pause' : namespace + 'play');
+          methods.pausePlay.update((slider.vars.slideshow) ? 'pause' : 'play');
 
           slider.pausePlay.bind(eventType, function(event) {
             event.preventDefault();
 
+            console.log(event.type);
             if (event.type == "click") {
               if ($(this).hasClass(namespace + 'pause')) {
                 slider.manualPause = true;
@@ -401,7 +402,7 @@
           });
         },
         update: function(state) {
-          if (state === namespace + "play") {
+          if (state === "play") {
             slider.pausePlay.removeClass(namespace + 'pause').addClass(namespace + 'play').html(slider.vars.playText);
           } else {
             slider.pausePlay.removeClass(namespace + 'play').addClass(namespace + 'pause').html(slider.vars.pauseText);
